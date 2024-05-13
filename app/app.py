@@ -25,14 +25,21 @@ def handle_form_data():
 
 
 
-products = [
-  { 'title': 'Mercedes', 'id': 1 },
-  { 'title': 'Audi', 'id': 2 },
-  { 'title': 'BMW', 'id': 3 },
+tasks = [
+  { 'title': 'Mercedes', 'id': 1, 'description': 'Elegance in motion: where luxury meets performance.', "status":"To Do"},
+  { 'title': 'Audi', 'id': 2,'description': 'Innovation that excites: redefining the driving experience, one Audi at a time', "status":"Doing" },
+  { 'title': 'BMW', 'id': 3, 'description': "Born to stand out. Elevate your drive with BMW's iconic design and performance.", "status":"Done"},
 ];
 
-@app.route("/api/todo/lists", methods=["POST"])
+@app.route("/api/taskmgr/lists", methods=["POST"])
 @cross_origin()
 def sample_to_list():
-    return jsonify(products), 200
-    
+    return jsonify(tasks), 200
+
+@app.route("/api/taskmgr/update", methods=["POST"])
+@cross_origin()
+def update_list():
+    global tasks
+    if request.method == "POST":
+        tasks = request.json
+    return jsonify(tasks), 200
