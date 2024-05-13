@@ -1,4 +1,5 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
+from user_management import User
 
 app = Flask(__name__)
 
@@ -6,3 +7,30 @@ app = Flask(__name__)
 @app.route("/")
 def main_app():
     return render_template("index.html")
+
+
+@app.route("/api/user/add_user", methods=["POST"])
+def handle_form_data():
+    # Check if the request contains form data
+    if request.method == "POST" and request.form:
+        # Get form data
+        form_data = request.form
+
+        response = User.add_user(dict(form_data))
+        return jsonify(response), 200
+    else:
+        # No form data found in the request
+        return "No form data found", 400
+
+
+
+products = [
+  { 'title': 'Mercedes', 'id': 1 },
+  { 'title': 'Audi', 'id': 2 },
+  { 'title': 'BMW', 'id': 3 },
+];
+
+@app.route("/api/todo/lists", methods=["POST"])
+def sample_to_list():
+    return jsonify(products), 200
+    

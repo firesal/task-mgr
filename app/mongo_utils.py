@@ -4,7 +4,7 @@ from os import environ
 
 def get_client():
     """
-    This function return pymongo client. If MONGO_HOST is not designed local host
+    This function return pymongo client. If MONGO_HOST is not defined local host
     is tried for connection
 
     Returns:
@@ -24,7 +24,7 @@ CLI = get_client()
 def get_users_collection():
     """
     This function fetches users collection.
-    if collection does not exist it will created,
+    if collection does not exist it will be created,
 
     Returns:
     type: users collection instance.
