@@ -1,2 +1,2 @@
-# to-do-list
-A minimal todolist application using Flask, React, Javascript and mongodb.
+# task-mgr
+A minimal taskm manager application using Flask, React, Javascript and mongodb.
