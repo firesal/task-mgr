@@ -176,7 +176,7 @@ export default function TaskMgr() {
 <li class="w-full mx-auto"  key={'li-'+task.id}data-taskid={task.id}>
 <div href="#" class="w-full block max-w-screen p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
 
-<h5 class="min-w-72 mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" key={task.id} contentEditable={true} suppressContentEditableWarning={true} onInput={()=>updateTitle(task.id, tasks, setTasks)}>{task.title}</h5>
+<h5 class="min-w-72 p-2 mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white hover:border hover:border-blue-300" key={task.id} contentEditable={true} suppressContentEditableWarning={true} onInput={()=>updateTitle(task.id, tasks, setTasks)}>{task.title}</h5>
 <div class="flex flex-row justify-between p-4 leading-normal">
   <p class="cursor-text min-w-72 p-2 font-normal hover:border hover:border-blue-300 text-gray-700 dark:text-gray-400" key={'p-'+task.id} contentEditable={true} suppressContentEditableWarning={true} onInput={(event)=>updateDescription(task.id, tasks, setTasks)}>{task.description}</p>
   <select key={'select-'+task.id} id={"taskstatus"+task.id} class="w-min bg-transparent text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"  onChange={()=>updateStatus(task.id, tasks, setTasks)} value={task.status}>

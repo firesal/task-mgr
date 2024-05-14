@@ -187,3 +187,42 @@ def update_password(new_password, username):
         updated_values = {"$set": {"password": new_password}}
         return update_user(query, updated_values)
     return False
+
+
+# Functions for user class
+def get_tasks_collection():
+    """
+    This function fetches tasks collection.
+    if collection does not exist it will be created,
+
+    Returns:
+    type: tasks collection instance.
+
+    Raises:
+    ConnectionError: if client is not connected
+    """
+    if CLI is not None:
+        db = CLI.to_do_list
+        tasks = db.tasks
+        return users
+    raise ConnectionError("Mongo Client Not connected")
+
+
+def add_task(task_details):
+    """
+    This function adds a new task to the db.
+
+    Parameters:
+    task_details (dict): a dict containing task details.
+    Example: {
+        "title":"Your First Task",
+        "description":"Your task description",
+        "username":"test_user",
+        "status":"To Do"
+        }
+
+    Returns:
+    type: InsertOneResult
+    """
+    tasks = get_tasks_collection()
+    return tasks.insert_one(user_details)
