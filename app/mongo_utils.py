@@ -204,7 +204,7 @@ def get_tasks_collection():
     if CLI is not None:
         db = CLI.to_do_list
         tasks = db.tasks
-        return users
+        return tasks
     raise ConnectionError("Mongo Client Not connected")
 
 
@@ -217,7 +217,7 @@ def add_task(task_details):
     Example: {
         "title":"Your First Task",
         "description":"Your task description",
-        "username":"test_user",
+        "user_id":"user mongo id",
         "status":"To Do"
         }
 
@@ -225,4 +225,72 @@ def add_task(task_details):
     type: InsertOneResult
     """
     tasks = get_tasks_collection()
-    return tasks.insert_one(user_details)
+    return tasks.insert_one(task_details)
+
+def find_task(query):
+    """
+    This is general function to find tasks by query
+    Parameters:
+    query (dict): dict containing query to find matching documents
+
+    Returns:
+    type: List containing documents matched by query
+    """
+    tasks = get_tasks_collection()
+    return list(tasks.find(query))
+
+
+def map_id_for_tasks(tasks):
+    mapped_list = []
+    for task in tasks:
+        temp_task = task.copy()
+        temp_task['id'] = str(task['_id'])
+        temp_task.pop('_id')
+        mapped_list.append(temp_task)
+        temp_task['user_id'] = str(temp_task['user_id'])
+    return mapped_list
+
+def find_task_by_user_id(user_id):
+    """
+    Finds taskss matching the user_id.
+
+    Parameters:
+    user_id(str): user_id of tbe corresponding user
+
+    Returns:
+    List: List of values matching corresponding user
+    """
+    tasks = find_task({"user_id": user_id})
+    tasks = map_id_for_tasks(tasks)
+    return tasks
+
+def update_task(query, updated_values):
+    """
+    This function updates tasks matching query with uodated values
+
+    Parameters:
+    query (dict): query dict to filter matching first document that needs the updation
+    updated_values (dict): dict containing fields and values which needs updation
+
+    Returns:
+    UpdateResult
+    """
+    tasks = get_tasks_collection()
+    return tasks.update_one(query, updated_values)
+
+def update_task_by_id(task_id, updated_values):
+    """
+    This function updates password of the corresponding username
+
+    Parameters:
+    new_password (str): new_password for the user.
+    username (str): username of the corresponding user.
+
+    Returns:
+    UpdatedResult
+    """
+    query = {"username": {"$eq": username}}
+    if new_password:
+        updated_values = {"$set": {"password": new_password}}
+        return update_user(query, updated_values)
+    return False

@@ -1,12 +1,20 @@
 import { useState, useEffect } from "react";
 import EditableInput from './EditableInput'
 
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+
 async function fetchDataFromEndpoint() {
   try {
     const response = await fetch('http://localhost:5000/api/taskmgr/lists', {
       method: 'POST',
+      credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json', 
       },
     });
 
