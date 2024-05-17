@@ -2,7 +2,7 @@ import random
 from flask import Flask, render_template, request, jsonify, make_response
 from flask_cors import CORS, cross_origin
 from user_management import User
-from task_management import add_first_task_for_user, fetch_user_tasks
+from task_management import add_first_task_for_user, fetch_user_tasks, update_task_mongo, add_task_for_user
 
 
 app = Flask(__name__)
@@ -64,14 +64,20 @@ def sample_to_list():
     return jsonify(tasks), 200 
     # return jsonify(tasks), 200
 
-@app.route("/api/taskmgr/update", methods=["POST", "OPTIONS"])
-@cross_origin()
+@app.route("/api/taskmgr/update", methods=["POST"])
 def update_list():
-    global tasks
+    user_id = request.cookies.get('USER_ID', False)
     if request.method == "POST":
-        tasks = request.json
+        tasks = request.json['tasks']
+        task_id = request.json.get('task_id', 'new_id')
         for i, task in enumerate(tasks):
             if task['id'] == 'new_id':
-                tasks[i]['id'] = str(random.getrandbits(128))
-
-    return jsonify(tasks), 200
+                # tasks[i]['id'] = str(random.getrandbits(128))
+                # task_id = tasks[i]['id']
+                result = add_task_for_user(user_id, task)
+                tasks[i]['id'] =result['task_id']
+            elif task['id'] == task_id:
+                update_task_mongo(task_id, task)
+    
+    user_tasks = fetch_user_tasks(user_id)
+    return jsonify(user_tasks), 200

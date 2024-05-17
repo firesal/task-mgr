@@ -1,12 +1,6 @@
 import { useState, useEffect } from "react";
 import EditableInput from './EditableInput'
-
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-}
-
+import Registration from './Registration'
 
 async function fetchDataFromEndpoint() {
   try {
@@ -32,14 +26,15 @@ async function fetchDataFromEndpoint() {
     throw error;
   }
 }
-async function updateDataFromEndpoint(tasks) {
+async function updateDataFromEndpoint(tasks, task_id) {
   try {
     const response = await fetch('http://localhost:5000/api/taskmgr/update', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(tasks)
+      body: JSON.stringify({'tasks': tasks, 'task_id': task_id})
     });
 
     // Check if the request was successful
@@ -64,10 +59,14 @@ async function addTask(){
     let new_task = {'id':'new_id', 'title':'Add Title..', 'description': 'Add description..', 'status':'To Do'}
     
     all_tasks.push(new_task)
-    updateDataFromEndpoint(all_tasks)
+    all_tasks = updateDataFromEndpoint(all_tasks, 'new_task')
     setTasks(all_tasks)
   }
 }
+// function loadRegistrationFormJson(){
+//   let form_data
+//   formdata = [...document.querySelectorAll('#registration_form input')].map((ele)=>())
+// }
 
 function updateDescription(task_id, tasks, setTasks) {
   let current_task_index, value
@@ -75,7 +74,7 @@ function updateDescription(task_id, tasks, setTasks) {
   value = document.querySelector(`li[data-taskid="${task_id}"] p`).innerText
   tasks[current_task_index].description = value
   setTasks(tasks)
-  const task_updation = updateDataFromEndpoint(tasks)
+  const task_updation = updateDataFromEndpoint(tasks, task_id)
 }
 
 function updateTitle(task_id, tasks, setTasks) {
@@ -84,17 +83,24 @@ function updateTitle(task_id, tasks, setTasks) {
   value = document.querySelector(`li[data-taskid="${task_id}"] h5`).innerText
   tasks[current_task_index].title = value
   setTasks(tasks)
-  const task_updation = updateDataFromEndpoint(tasks)
+  const task_updation = updateDataFromEndpoint(tasks, task_id)
 }
 function updateSearch(setSearch) {
   let value, new_tasks, tasks_status
   value = document.querySelector(`#default-search`).value
   setSearch(value)
   tasks_status = document.querySelector('#task-status-filter').value
-  new_tasks = original_tasks.filter((task)=>task.title.toLowerCase().includes(value))
-  if (tasks_status != 'All'){
-    new_tasks = new_tasks.filter((task)=>task.status == tasks_status)
+  if (value != null && value != undefined && value != ''){  
+    
+    new_tasks = original_tasks.filter((task)=>(task.title.toLowerCase().includes(value.toLowerCase() || task.description.toLowerCase().includes(value.toLowerCase()))))
+    }
+  else{
+    new_tasks = original_tasks
   }
+  if (tasks_status != 'All'){
+      new_tasks = new_tasks.filter((task)=>task.status == tasks_status)
+  }
+  console.log(new_tasks)
   setTasks(new_tasks)
   return new_tasks
 }
@@ -105,7 +111,7 @@ async function updateStatus(task_id, tasks, setTasks) {
   current_task_index = tasks.findIndex((item)=>{return item.id==task_id})
   value = document.querySelector(`li[data-taskid="${task_id}"] select`).value
   tasks[current_task_index].status = value
-  const task_updation = await updateDataFromEndpoint(tasks)
+  const task_updation = await updateDataFromEndpoint(tasks, task_id)
   setTasks(tasks)
 }
 let tasks, setTasks
@@ -200,6 +206,7 @@ export default function TaskMgr() {
   );
   return (
     <>
+    <Registration />
     <SearchFilter />
     <div class="w-full mx-auto">
   <ul class="w-full mx-auto text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">{listItems}</ul>

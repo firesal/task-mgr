@@ -1,4 +1,5 @@
 import pymongo
+from bson.objectid import ObjectId 
 from os import environ
 
 
@@ -260,7 +261,7 @@ def find_task_by_user_id(user_id):
     Returns:
     List: List of values matching corresponding user
     """
-    tasks = find_task({"user_id": user_id})
+    tasks = find_task({"user_id": str(user_id)})
     tasks = map_id_for_tasks(tasks)
     return tasks
 
@@ -283,14 +284,12 @@ def update_task_by_id(task_id, updated_values):
     This function updates password of the corresponding username
 
     Parameters:
-    new_password (str): new_password for the user.
-    username (str): username of the corresponding user.
+    task_id (str): task_id of the task which needs to updated.
+    update_values (dict): new values for the corresponding fields in the task
 
     Returns:
     UpdatedResult
     """
-    query = {"username": {"$eq": username}}
-    if new_password:
-        updated_values = {"$set": {"password": new_password}}
-        return update_user(query, updated_values)
-    return False
+    query = {"_id":  ObjectId(task_id)}
+    updated_values = {"$set": updated_values}
+    return update_task(query, updated_values)
