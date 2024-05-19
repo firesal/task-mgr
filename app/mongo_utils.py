@@ -290,6 +290,20 @@ def update_task_by_id(task_id, updated_values):
     Returns:
     UpdatedResult
     """
-    query = {"_id":  ObjectId(task_id)}
+    query = {"_id":  ObjectId(str(task_id))}
     updated_values = {"$set": updated_values}
-    return update_task(query, updated_values)
+    result = update_task(query, updated_values)
+    print(result, task_id)
+    return result
+
+
+def delete_task(task_id):
+    """
+    This function deletes the task id provided.
+
+    Returns:
+    type: DeleteOneResult
+    """
+    tasks = get_tasks_collection()
+    query = {"_id":  ObjectId(task_id)}
+    return tasks.delete_one(query)

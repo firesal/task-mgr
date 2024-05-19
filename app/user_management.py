@@ -1,19 +1,23 @@
 import re
+import hashlib
+from bson.objectid import ObjectId 
 from mongo_utils import (find_user_by_username, find_user_by_email,
-    add_user, update_secret_question, update_password, insert_test_user)
+    add_user, update_secret_question, update_password, insert_test_user, update_user)
 
 
 EMAIL_VALIDATION_REGEX = r"""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])""" # noqa
 
 
 class User:
-    def __init__(self, username, password, secret_question, answer, email, _id=None):
+    def __init__(self, username, password, repeat_password, secret_question, answer, email, _id=None):
         self._id = str(_id)
         self.username = username
         self.password = password
+        self.repeat_password = repeat_password
         self.secret_question = secret_question
         self.answer = answer
         self.email = email
+        self.validation_msg = ''
 
     def to_json(self):
         return {
@@ -56,22 +60,28 @@ class User:
         return True, "answer acceptable"
 
     @staticmethod
+    def validate_password(password, repeat_password):
+        if password != repeat_password:
+            return False, "password not same"
+        return True, "Password is the same"
+
+    @staticmethod
     def add_user(user_details):
         current_user = User.from_json(user_details)
         if current_user.validate_new_user():
             result = add_user(user_details)
-            print(result)
             return {"status": result.acknowledged, "message": "user added"}
         return {"status": False, "message": "User validation failed"}
 
 
     def validate_new_user(self):
-        if (
-            User.validate_username(self.username)[0]
-            and User.validate_email(self.email)[0]
-            and User.validate_answer(self.answer)[0]
-        ):
+        validations = [User.validate_username(self.username),
+                        User.validate_password(self.password, self.repeat_password),
+                        User.validate_email(self.email),
+                        User.validate_answer(self.answer)]
+        if all([result[0] for result in validations]):
             return True
+        self.validation_msg ='\n'.join([result[1] for result in validations if not result[0]])
         return False
 
     @staticmethod
@@ -105,3 +115,12 @@ class User:
     def add_demo_user():
         added_user_id = insert_test_user().inserted_id
         return added_user_id
+
+    @staticmethod
+    def rename_and_update_user(user_id, values):
+        query = {"_id":  ObjectId(str(user_id))}
+        values.pop('repeat_password')
+        values['password'] = hashlib.md5(values['password'].encode('utf-8')).hexdigest()
+        # user = User(_id=user_id, **values)
+        result = update_user(query,{'$set' :values})
+        return {"status": result.acknowledged, "message": "User Details sucessfully updated."}

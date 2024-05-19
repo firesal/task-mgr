@@ -1,4 +1,4 @@
-from mongo_utils import add_task, find_task_by_user_id, update_task_by_id
+from mongo_utils import add_task, find_task_by_user_id, update_task_by_id, delete_task
 
 def add_first_task_for_user(user_id):
     '''
@@ -39,3 +39,10 @@ def add_task_for_user(user_id, task_details):
         })
     tasks = find_task_by_user_id(user_id)
     return {"status": result.acknowledged, "message": "task added", "tasks": tasks, "task_id": str(result.inserted_id)}
+
+def delete_task_by_task_id(task_id):
+    result = delete_task(str(task_id))
+    '''
+    Delete task corresponding to the given task_id
+    '''
+    return {"status": result.acknowledged, "message": "task delete"}

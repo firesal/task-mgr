@@ -2,7 +2,7 @@ import random
 from flask import Flask, render_template, request, jsonify, make_response
 from flask_cors import CORS, cross_origin
 from user_management import User
-from task_management import add_first_task_for_user, fetch_user_tasks, update_task_mongo, add_task_for_user
+from task_management import add_first_task_for_user, fetch_user_tasks, update_task_mongo, add_task_for_user, delete_task_by_task_id
 
 
 app = Flask(__name__)
@@ -23,18 +23,21 @@ def main_app():
     return render_template("index.html")
 
 
-@app.route("/api/user/add_user")
+@app.route("/api/user/add_user",methods=["POST"])
 def handle_form_data():
     # Check if the request contains form data
-    if request.method == "POST" and request.form:
+    user_id = request.cookies.get('USER_ID', False)
+    if request.method == "POST":
         # Get form data
-        form_data = request.form
-
-        response = User.add_user(dict(form_data))
-        return jsonify(response), 200
-    else:
-        # No form data found in the request
-        return "No form data found", 400
+        form_data = request.json
+        new_user = User(**form_data)
+        if new_user.validate_new_user():
+            return User.rename_and_update_user(user_id, form_data)
+            # return jsonify({'status': True, 'message': 'Validation Success'}), 200
+        else:
+            return jsonify({'status': False, 'message': new_user.validation_msg}), 200
+        # response = User.add_user(dict(form_data))
+        # return jsonify(response), 200
 
 tasks = [
   { 'title': 'Your First Task...', 'id': str(random.getrandbits(128)), 'description': 'Click to edit. Put your description here..', 'status':'To Do'}
@@ -69,15 +72,36 @@ def update_list():
     user_id = request.cookies.get('USER_ID', False)
     if request.method == "POST":
         tasks = request.json['tasks']
-        task_id = request.json.get('task_id', 'new_id')
+        task_id = request.json.get('task_id', False)
         for i, task in enumerate(tasks):
-            if task['id'] == 'new_id':
-                # tasks[i]['id'] = str(random.getrandbits(128))
-                # task_id = tasks[i]['id']
-                result = add_task_for_user(user_id, task)
-                tasks[i]['id'] =result['task_id']
-            elif task['id'] == task_id:
+            if task['id'] == task_id and task_id != 'new_id':
                 update_task_mongo(task_id, task)
     
     user_tasks = fetch_user_tasks(user_id)
     return jsonify(user_tasks), 200
+
+
+@app.route("/api/taskmgr/add", methods=["POST"])
+def add_list():
+    user_id = request.cookies.get('USER_ID', False)
+    if request.method == "POST":
+        tasks = request.json['tasks']
+        task_id = request.json.get('task_id', 'new_id')
+        for i, task in enumerate(tasks):
+            if task['id'] == 'new_id' and task_id == 'new_id':
+                result = add_task_for_user(user_id, task)
+                tasks[i]['id'] =result['task_id']
+    
+    user_tasks = fetch_user_tasks(user_id)
+    return jsonify(user_tasks), 200
+
+
+@app.route("/api/taskmgr/delete", methods=["POST"])
+def delete_list():
+    user_id = request.cookies.get('USER_ID', False)
+    if request.method == "POST":
+        task_id = request.json.get('task_id', 'new_id')
+        result = delete_task_by_task_id(task_id)
+        
+        user_tasks = fetch_user_tasks(user_id)
+        return jsonify(user_tasks), 200
