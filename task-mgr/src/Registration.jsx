@@ -35,8 +35,11 @@ async function addUserDb(data){
       console.error('There has been a problem with your fetch operation:', error);
   });
 }
+export function RForm({formOpen, setOpen}) {
 
-function setFormDefault(){
+  
+    useEffect(() => {
+      function setFormDefault(){
     const form = document.getElementById('registration_form')
     if (form != null) {
         form.addEventListener('submit', function(event) {
@@ -52,30 +55,13 @@ function setFormDefault(){
           });
 
         }
-}
+      }
 
-export default function Registration({formOpen, setOpen}) {
-
-  
-    useEffect(() => {
-
+      setFormDefault()
       }
     , []);
-if(!formOpen) {
-      return(
 
-
-
-  
-    <div className= "w-full mx-auto">
-    <button className="mx-auto block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button" onClick={()=>openForm(setOpen)}>
-        Register
-      </button>
-    </div>
-    )}
-else { 
-
-  return (
+     return (
 <div className= "w-full mx-auto ">
     <div id="default-modal" tabindex="-1" aria-hidden="false" className="flex items-center overflow-y-auto overflow-x-hidden absolute inset-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div className="absolute p-4 w-full max-w-2xl max-h-full">
@@ -131,4 +117,28 @@ else {
         </div>
     </div>
   </div>
-)}}
+)
+}
+
+export default function Registration({formOpen, setOpen}) {
+
+  
+    useEffect(() => {
+
+      }
+    , []);
+if(!formOpen) {
+      return(
+
+
+
+  
+    <div className= "w-full mx-auto my-3">
+      <button className="mx-auto block text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5" type="button" onClick={()=>openForm(setOpen)}>
+        Register
+      </button>
+    </div>
+    )}
+else { 
+    return( <RForm formOpen={formOpen} setOpen={setOpen} />)
+ }}

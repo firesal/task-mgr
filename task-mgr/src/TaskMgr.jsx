@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Registration from './Registration';
+import Login from './Login';
 
 async function fetchDataFromEndpoint() {
   try {
@@ -104,14 +105,25 @@ async function deleteDataFromEndpoint(task_id) {
     throw error;
   }
 }
+function delete_cookie(name) {
+  document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
 
+function deleteLoginCookie(){
+  delete_cookie('USER_ID')
+}
 let original_tasks
 let filterSearch, setSearch
 let formOpen, setOpen
+let formLoginOpen, setLoginOpen
 let tasks, setTasks
+let isLoggedIn, setLoggedIn
+
 async function addTask(){
-  let all_tasks
-  all_tasks = await fetchDataFromEndpoint();
+  let all_tasks;
+  let api_results;
+  api_results = await fetchDataFromEndpoint();
+  all_tasks = api_results.tasks
   if (all_tasks.filter((task)=>task.id =='new_id').length < 1 ){
     let new_task = {'id':'new_id', 'title':'Add Title..', 'description': 'Add description..', 'status':'To Do'}
     
@@ -182,7 +194,7 @@ export function SearchFilter() {
   [filterSearch, setSearch] = useState('')
   
   return (
-<form className="max-w-md mx-auto">   
+<form className="max-w-md mx-auto my-5">   
     <label for="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
     <div className="relative">
         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -208,11 +220,10 @@ return(
 <div className="relative bg-white rounded-lg shadow dark:bg-gray-900 m-4">
     <div className="w-full max-w-screen-xl mx-auto p-4 md:py-8">
         <div className="sm:flex sm:items-center sm:justify-between">
-              <button type="button" className="fixed bottom-0 left-3 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" onClick={addTask}>
+              <button type="button" className="relative bottom-0 left-3 text-white text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" onClick={addTask}>
                 <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Add Task</span>
             </button>
         </div>
-        <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
         
     </div>
 </div>
@@ -223,13 +234,23 @@ return(
 export default function TaskMgr() {
   [tasks, setTasks] = useState([]);
   [formOpen, setOpen] = useState(false);
+  [formLoginOpen, setLoginOpen] = useState(false);
+  [isLoggedIn, setLoggedIn] = useState(false);
   useEffect(() => {
+     let r_form
+     r_form = document.getElementById('registration_form')
+     if (r_form  != null){
+      document.getElementById('task-body').classList.add('opacity-25')
+     }
+    else{
+    }
     const fetchData = async () => {
       try {
         // Fetch data from the endpoint
-        const newData = await fetchDataFromEndpoint();
-
+        const apiResults = await fetchDataFromEndpoint();
+        const newData = apiResults.tasks
         setTasks(newData);
+        apiResults.username == 'test' ? null : setLoggedIn(true)
         original_tasks = newData
         if (document.getElementById('default-search') != null){
           filterValue = document.getElementById('default-search').value
@@ -261,22 +282,32 @@ export default function TaskMgr() {
     <option>In Progress</option>
     <option>Done</option>
   </select>
-  <button  key={'del-'+task.id} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onMouseDown={()=>deleteTask(task.id)}>Delete</button>
+  <button  key={'del-'+task.id} className="mx-3 py-2.5 px-5 me-2 mb-2 hover:drop-shadow-lg text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200  focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700" onMouseDown={()=>deleteTask(task.id)}><svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32px" height="32px" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve" fill="#ffffff" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path fill="#77767b" d="M56,4H40c0-2.211-1.789-4-4-4h-8c-2.211,0-4,1.789-4,4H8C5.789,4,4,5.789,4,8v5c0,0.553,0.447,1,1,1h54 c0.553,0,1-0.447,1-1V8C60,5.789,58.211,4,56,4z"></path> <path fill="#77767b" d="M20,24c-0.553,0-1,0.447-1,1v26c0,0.553,0.447,1,1,1s1-0.447,1-1V25C21,24.447,20.553,24,20,24z"></path> <path fill="#77767b" d="M32,24c-0.553,0-1,0.447-1,1v26c0,0.553,0.447,1,1,1s1-0.447,1-1V25C33,24.447,32.553,24,32,24z"></path> <path fill="#77767b" d="M44,24c-0.553,0-1,0.447-1,1v26c0,0.553,0.447,1,1,1s1-0.447,1-1V25C45,24.447,44.553,24,44,24z"></path> <path fill="#77767b" d="M9,16H7v44c0,2.211,1.789,4,4,4h42c2.211,0,4-1.789,4-4V16h-2H9z M23,51c0,1.657-1.343,3-3,3s-3-1.343-3-3 V25c0-1.657,1.343-3,3-3s3,1.343,3,3V51z M35,51c0,1.657-1.343,3-3,3s-3-1.343-3-3V25c0-1.657,1.343-3,3-3s3,1.343,3,3V51z M47,51 c0,1.657-1.343,3-3,3s-3-1.343-3-3V25c0-1.657,1.343-3,3-3s3,1.343,3,3V51z"></path> </g> </g></svg></button>
   </div>
 </div>
 </div>
 </li>
 
   );
+  const logoutButton = <>    <div className= "w-full mx-auto my-3">
+      <button className="mx-auto block text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5" type="button" onClick={deleteLoginCookie}>
+        Logout
+      </button>
+    </div> </>
+  const reg_or_login = isLoggedIn? logoutButton: <div className="flex flex-row gap-3 w-fit mx-auto"><Registration  formOpen={formOpen} setOpen={setOpen}/><Login formOpen={formLoginOpen} setOpen={setLoginOpen}/></div>
   return (
     <>
-    <Registration formOpen={formOpen} setOpen={setOpen}/>
-    <div id="task-body" className={"w-full mx-auto " + (formOpen ? 'opacity-25': '')}>
-      <SearchFilter />
-      <div className="w-full mx-auto">
-        <ul className="w-full mx-auto text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">{listItems}</ul>
+
+   
+    {reg_or_login}
+    <div className="w-full lg:w-2/5 lg:min-w-fit md:w-4/5 sm:w-full mx-auto">
+      <div id="task-body" className={"w-full mx-auto " + (formOpen ? 'opacity-25': '')}>
+        <SearchFilter />
+        <div className="w-full mx-auto">
+          <ul className="w-full mx-auto text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">{listItems}</ul>
+        </div>
+        <MgrFooter />
       </div>
-      <MgrFooter />
     </div>
   </>
   )}

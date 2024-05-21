@@ -153,6 +153,21 @@ def find_user_by_username(username):
     return find_user({"username": username})
 
 
+
+def find_user_by_userid(user_id):
+    """
+    Finds user matching the user_id.
+
+    Parameters:
+    user_id (str): Userid of tbe corresponding user
+
+    Returns:
+    List: List of values matching corresponding user
+    """
+    result = find_user({"_id": ObjectId(str(user_id))})
+    return list(result)
+
+
 def update_secret_question(updated_question, updated_answer, username):
     """
     This function is to update secret question of a user.

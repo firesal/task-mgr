@@ -18,9 +18,25 @@ def check_cookies(request):
     cookies = request.cookies
     return cookies.get('USER_ID', False)
 
+def make_user_response(tasks, user_id):
+    user_details = User.find_user_by_id(user_id)
+    return {
+            'tasks': tasks,
+            'username': user_details[0]['username']
+    }
+
 @app.route("/")
 def main_app():
     return render_template("index.html")
+
+
+@app.route("/api/user/login",methods=["POST"])
+def user_login():
+    result = User.login_user(**request.json)
+    if result["status"] == True:
+        response.headers['Set-Cookie'] = f'USER_ID={str(result["user_id"])}; Path=/'
+    response = make_response(jsonify(result), 200)
+    return response, 200
 
 
 @app.route("/api/user/add_user",methods=["POST"])
@@ -56,15 +72,24 @@ def sample_to_list():
     if not check_cookies(request):
         new_user_response, new_user_id = add_demo_user()
         if new_user_response['status'] == True:
-            response = make_response(jsonify(new_user_response['tasks']), 200)
+            response = make_response(jsonify(make_user_response(new_user_response['tasks'], new_user_id)), 200)
             # response.set_cookie('USER_ID', str(new_user_id), domain='localhost', path='/')
             response.headers['Set-Cookie'] = f'USER_ID={str(new_user_id)}; Path=/'
             return response
     else:
         user_id = request.cookies.get('USER_ID', False)
         user_tasks = fetch_user_tasks(user_id)
-        return jsonify(user_tasks), 200 
-    return jsonify(tasks), 200 
+        if not user_tasks:
+            user = User.find_user_by_id(user_id)
+            if not user:
+                new_user_response, new_user_id = add_demo_user()
+                response = make_response(jsonify(make_user_response(new_user_response['tasks'], new_user_id)), 200)
+                response.headers['Set-Cookie'] = f'USER_ID={str(new_user_id)}; Path=/'
+                return response
+
+
+        return jsonify(make_user_response(user_tasks, user_id)), 200 
+    return jsonify(make_user_response(tasks, 'new_user')), 200 
     # return jsonify(tasks), 200
 
 @app.route("/api/taskmgr/update", methods=["POST"])

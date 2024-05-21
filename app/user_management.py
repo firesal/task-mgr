@@ -2,7 +2,7 @@ import re
 import hashlib
 from bson.objectid import ObjectId 
 from mongo_utils import (find_user_by_username, find_user_by_email,
-    add_user, update_secret_question, update_password, insert_test_user, update_user)
+    add_user, update_secret_question, update_password, insert_test_user, update_user, find_user_by_userid, find_user)
 
 
 EMAIL_VALIDATION_REGEX = r"""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])""" # noqa
@@ -49,7 +49,7 @@ class User:
         if not re.fullmatch(EMAIL_VALIDATION_REGEX, email):
             return False, "username too short"
         elif find_user_by_email(email):
-            return False, "email already associated witha username"
+            return False, "email already associated with a username"
 
         return True, "username is valid and available"
 
@@ -75,13 +75,16 @@ class User:
 
 
     def validate_new_user(self):
+        self.validation_msg = ''
         validations = [User.validate_username(self.username),
                         User.validate_password(self.password, self.repeat_password),
                         User.validate_email(self.email),
                         User.validate_answer(self.answer)]
+        self.validation_msg ='\n'.join([result[1] for result in filter(lambda x: not x[0], validations)])
+        print(self.validation_msg)
         if all([result[0] for result in validations]):
             return True
-        self.validation_msg ='\n'.join([result[1] for result in validations if not result[0]])
+        
         return False
 
     @staticmethod
@@ -124,3 +127,19 @@ class User:
         # user = User(_id=user_id, **values)
         result = update_user(query,{'$set' :values})
         return {"status": result.acknowledged, "message": "User Details sucessfully updated."}
+
+    @staticmethod
+    def find_user_by_id(user_id):
+        return find_user_by_userid(user_id)
+
+    @staticmethod
+    def login_user(email, password):
+        password = hashlib.md5(password.encode('utf-8')).hexdigest()
+        query = {
+        'email':email,
+        'password': password
+        }
+        result = find_user(query)
+        if result:
+            return {'status': True, "message": "Login Success", "user_id": str(result[0]["_id"])}
+        return {'status': False, "message": "Login Failed"}
