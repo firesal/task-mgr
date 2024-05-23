@@ -1,5 +1,5 @@
 import pymongo
-from bson.objectid import ObjectId 
+from bson.objectid import ObjectId
 from os import environ
 
 
@@ -153,7 +153,6 @@ def find_user_by_username(username):
     return find_user({"username": username})
 
 
-
 def find_user_by_userid(user_id):
     """
     Finds user matching the user_id.
@@ -243,6 +242,7 @@ def add_task(task_details):
     tasks = get_tasks_collection()
     return tasks.insert_one(task_details)
 
+
 def find_task(query):
     """
     This is general function to find tasks by query
@@ -260,11 +260,12 @@ def map_id_for_tasks(tasks):
     mapped_list = []
     for task in tasks:
         temp_task = task.copy()
-        temp_task['id'] = str(task['_id'])
-        temp_task.pop('_id')
+        temp_task["id"] = str(task["_id"])
+        temp_task.pop("_id")
         mapped_list.append(temp_task)
-        temp_task['user_id'] = str(temp_task['user_id'])
+        temp_task["user_id"] = str(temp_task["user_id"])
     return mapped_list
+
 
 def find_task_by_user_id(user_id):
     """
@@ -280,6 +281,7 @@ def find_task_by_user_id(user_id):
     tasks = map_id_for_tasks(tasks)
     return tasks
 
+
 def update_task(query, updated_values):
     """
     This function updates tasks matching query with uodated values
@@ -294,6 +296,7 @@ def update_task(query, updated_values):
     tasks = get_tasks_collection()
     return tasks.update_one(query, updated_values)
 
+
 def update_task_by_id(task_id, updated_values):
     """
     This function updates password of the corresponding username
@@ -305,7 +308,7 @@ def update_task_by_id(task_id, updated_values):
     Returns:
     UpdatedResult
     """
-    query = {"_id":  ObjectId(str(task_id))}
+    query = {"_id": ObjectId(str(task_id))}
     updated_values = {"$set": updated_values}
     result = update_task(query, updated_values)
     print(result, task_id)
@@ -320,5 +323,5 @@ def delete_task(task_id):
     type: DeleteOneResult
     """
     tasks = get_tasks_collection()
-    query = {"_id":  ObjectId(task_id)}
+    query = {"_id": ObjectId(task_id)}
     return tasks.delete_one(query)

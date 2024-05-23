@@ -12,7 +12,7 @@ function closeForm(setOpen) {
   setOpen(false)
 }
 
-async function addUserDb(data){
+async function addUserDb(data, setOpen){
     fetch('http://localhost:5000/api/user/login', {
       method: 'POST',
       credentials: 'include',
@@ -29,7 +29,12 @@ async function addUserDb(data){
       return response.json();
   })
   .then(data => {
+    if (data.status == true){
+        setOpen(false)
+    }
      alert(data.message)
+     location.reload()
+    
   })
   .catch(error => {
       console.error('There has been a problem with your fetch operation:', error);
@@ -62,7 +67,7 @@ export function LForm({formOpen, setOpen}) {
           // }
           console.log(data)
           // Make a fetch request to submit the form data
-          addUserDb(data)
+          addUserDb(data, setOpen)
           });
 
         }

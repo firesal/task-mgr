@@ -111,6 +111,7 @@ function delete_cookie(name) {
 
 function deleteLoginCookie(){
   delete_cookie('USER_ID')
+  location.reload()
 }
 let original_tasks
 let filterSearch, setSearch
@@ -139,7 +140,8 @@ async function addTask(){
 function deleteTask(task_id){
   console.log('task '+task_id+' is to be deleted')
   deleteDataFromEndpoint(task_id).then(
-    (data)=>setTasks(data))
+    (data)=>setTasks(data)
+    )
 }
 
 
