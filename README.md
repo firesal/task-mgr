@@ -1,5 +1,5 @@
 # task-mgr
-A minimal taskm manager application using Flask, React, Javascript and mongodb.
+A minimal task manager application using Flask, React, Javascript and mongodb.
 
 
 
