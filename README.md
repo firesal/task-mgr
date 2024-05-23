@@ -60,7 +60,7 @@ Click on any of the prerequisite to know how to install an use them.
 
 ## Contributing
 
-Contributions are welcome! Please follow the guidelines in `CONTRIBUTING.md` for submitting changes.
+Contributions are welcome.
 
 ## License
 
